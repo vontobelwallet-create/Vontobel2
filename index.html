@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wallet Test</title>
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
+
+</head>
+<body>
+
+<h2>Wallet Balance ₹0</h2>
+<button onclick="addMoney()">Add ₹10 via UPI</button>
+
+<script>
+async function addMoney() {
+  const res = await fetch("http://localhost:3000/create-order", {
+    method: "POST"
+  });
+
+  const data = await res.json();
+
+  if (!data.payment_session_id) {
+    alert("Session creation failed");
+    return;
+  }
+
+  const cashfree = Cashfree({
+    mode: "production" // use "sandbox" for test
+  });
+
+  cashfree.checkout({
+    paymentSessionId: data.payment_session_id
+  });
+}
+</script>
+
+
+</body>
+</html>
