@@ -4,7 +4,7 @@ const fetch = require("node-fetch");
 const cors = require("cors");
 require("dotenv").config();
 const session = require("express-session");
-const MongoStore = require("connect-mongo").default;
+const MongoStore = require("connect-mongo");
 
 
 const app = express();
@@ -241,3 +241,4 @@ app.get("/verify-payment/:orderId", async (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
+
