@@ -73,16 +73,34 @@ app.get("/",(req,res)=>{
     res.sendFile(__dirname+"/index.html")
 })
 
-app.get("/user_info", (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
+app.get("/user_info", async (req, res) => {
+  try {
+    // 🔐 Session check
+    if (!req.session.user || !req.session.user.email) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-  res.json({
-    userId: req.session.user.id,
-    balance: req.session.user.balance 
-  });
+    // 🔍 Always fetch latest user from DB
+    const user = await usersCollection.findOne(
+      { email: req.session.user.email },
+      { projection: { balance: 1 } }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      userId: req.session.user.id,
+      balance: user.balance
+    });
+
+  } catch (err) {
+    console.error("user_info error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
+
 
 
 
