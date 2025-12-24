@@ -4,7 +4,8 @@ const fetch = require("node-fetch");
 const cors = require("cors");
 require("dotenv").config();
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const MongoStore = require("connect-mongo").default;
+
 
 const app = express();
 
