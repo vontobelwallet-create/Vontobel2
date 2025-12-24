@@ -4,15 +4,18 @@ const fetch = require("node-fetch");
 const cors = require("cors");
 require("dotenv").config();
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const MongoStore = require("connect-mongo").default;
 
 
 const app = express();
 
 app.use(cors({
-  origin: "https://vontobel2.onrender.com",
-  credentials: true
+  origin: "https://vontobelwallet-create.github.io",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
 }));
+
 
 app.use(express.json());
 
@@ -241,4 +244,3 @@ app.get("/verify-payment/:orderId", async (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
-
