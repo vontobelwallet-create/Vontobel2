@@ -201,7 +201,7 @@ body: JSON.stringify({
   order_amount: amount,
   order_currency: "INR",
   customer_details: {
-  customer_id: req.session.user.id.toString(),   
+  customer_id: req.session.user.id,   
   customer_phone: req.session.user.phone
   },
   order_meta: {
