@@ -237,9 +237,14 @@ app.get("/payment-result", async (req, res) => {
 
 
 app.get("/verify-payment/:orderId", async (req, res) => {
-  const orderId = req.params.orderId;
+  const { orderId } = req.params;
+
+  if (!req.session.user || !req.session.user.email) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
+    // 1️⃣ Verify order from Cashfree
     const response = await fetch(
       `https://api.cashfree.com/pg/orders/${orderId}`,
       {
@@ -253,11 +258,58 @@ app.get("/verify-payment/:orderId", async (req, res) => {
     );
 
     const data = await response.json();
+
+    if (!data || data.order_status !== "PAID") {
+      return res.status(400).json({
+        error: "Payment not successful",
+        status: data.order_status
+      });
+    }
+
+    const amount = Number(data.order_amount);
+
+    // 2️⃣ Find user by email
+    const user = await User.findOne({ email: req.session.user.email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // 3️⃣ Prevent duplicate credit
+    const alreadyCredited = user.trans.some(
+      t => t.transId === orderId
+    );
+
+    if (alreadyCredited) {
+      return res.json({
+        message: "Payment already credited",
+        balance: user.balance
+      });
+    }
+
+    // 4️⃣ Update balance
+    user.balance += amount;
+
+    // 5️⃣ Push transaction record
+    user.trans.push({
+      transId: orderId,
+      amount: amount,
+      date: new Date()
+    });
+
+    await user.save();
+
+    // 6️⃣ Sync session balance
+    req.session.user.balance = user.balance;
+
     res.json(data);
+
   } catch (err) {
+    console.error("Verify payment error:", err);
     res.status(500).json({ error: "Verification failed" });
   }
 });
+
 
 
 app.listen(3000, () => {
