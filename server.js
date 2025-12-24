@@ -19,6 +19,7 @@ app.get("/",(req,res)=>{
 
 app.post("/create-order", async (req, res) => {
   const orderId = "ORDER_" + Date.now();
+const amount = Number(req.body.amount);
 
   try {
     const response = await fetch("https://api.cashfree.com/pg/orders", {
@@ -31,7 +32,7 @@ app.post("/create-order", async (req, res) => {
       },
 body: JSON.stringify({
   order_id: orderId,
-  order_amount: 10,
+  order_amount: amount,
   order_currency: "INR",
   customer_details: {
     customer_id: "cust_001",
