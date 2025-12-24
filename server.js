@@ -36,8 +36,9 @@ app.use(session({
     httpOnly: true,
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 * 7 // ✅ 7 DAYS (milliseconds)
-  }
+  },proxy: true
 }));
+app.set("trust proxy", 1);
 
 
 const CF_APP_ID = process.env.CF_APP_ID;
@@ -244,4 +245,3 @@ app.get("/verify-payment/:orderId", async (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
-
