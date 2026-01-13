@@ -83,7 +83,7 @@ app.get("/user_info", async (req, res) => {
     // 🔍 Always fetch latest user from DB
     const user = await usersCollection.findOne(
       { email: req.session.user.email },
-      { projection: { balance: 1 } }
+      { projection: { balance: 1 , phone: 1, name: 1} }
     );
 
     if (!user) {
