@@ -94,7 +94,8 @@ app.get("/user_info", async (req, res) => {
       userId: req.session.user.id,
       balance: user.balance,
       phone:user.phone,
-      name:user.name
+      name:user.name,
+      email:req.session.user.email
     });
 
   } catch (err) {
