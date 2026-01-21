@@ -10,14 +10,14 @@ const MongoStore = require("connect-mongo");
 const app = express();
 
 app.use(cors({
-  origin: "vontobel-ledge.vercel.app",
+  origin: "https://vontobel-ledge.vercel.app",
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
+  
 }));
 
 
 app.use(express.json());
+app.set("trust proxy", 1);
 
 app.use(session({
   name: "vontobel.sid",
@@ -38,7 +38,7 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24 * 7 // ✅ 7 DAYS (milliseconds)
   },proxy: true
 }));
-app.set("trust proxy", 1);
+
 
 
 const CF_APP_ID = process.env.CF_APP_ID;
