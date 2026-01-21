@@ -388,51 +388,27 @@ app.post("/withdraw", async (req, res) => {
 });
 
 
-
 app.post("/activate-upi", async (req, res) => {
-  try {
-    if (!req.session.user?.email) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const email = req.session.user.email;
-
-    // 🔍 Fetch user first
-    const user = await usersCollection.findOne(
-      { email },
-      { projection: { upi: 1 } }
-    );
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // ⛔ UPI already exists
-    if (user.upi) {
-      return res.status(409).json({
-        error: "UPI already activated",
-        upi: user.upi
-      });
-    }
-
-    const { upi } = req.body;
-
-    if (!upi) {
-      return res.status(400).json({ error: "UPI required" });
-    }
-
-    // ✅ Activate UPI only ONCE
-    await usersCollection.updateOne(
-      { email },
-      { $set: { upi } }
-    );
-
-    res.json({ success: true, upi });
-
-  } catch (err) {
-    console.error("activate-upi error:", err);
-    res.status(500).json({ error: "Server error" });
+  if (!req.session.user?.email) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
+
+  const user = await usersCollection.findOne({
+    email: req.session.user.email
+  });
+
+  if (user?.upi) {
+    return res.status(409).json({ upi: user.upi });
+  }
+
+  const { upi } = req.body;
+
+  await usersCollection.updateOne(
+    { email: req.session.user.email },
+    { $set: { upi } }
+  );
+
+  res.json({ upi });
 });
 
 
