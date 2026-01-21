@@ -10,7 +10,7 @@ const MongoStore = require("connect-mongo");
 const app = express();
 
 app.use(cors({
-  origin: "https://vontobelwallet-create.github.io",
+  origin: "vontobel-ledge.vercel.app",
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type"]
@@ -243,7 +243,7 @@ app.get("/payment-result", async (req, res) => {
       <body style="font-family:Arial;text-align:center;padding:40px">
         <h2>Processing Payment...</h2>
         <script>
-          window.location.href = "https://vontobelwallet-create.github.io/Vontobel_Ledge/dashboard.html?order_id=${orderId}";
+          window.location.href = "vontobel-ledge.vercel.app/dashboard.html?order_id=${orderId}";
         </script>
       </body>
     </html>
