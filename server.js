@@ -389,6 +389,19 @@ app.post("/withdraw", async (req, res) => {
 
 
 
+app.post("/activate-upi", async (req,res)=>{
+  if(!req.session.user) return res.sendStatus(401);
+
+  await usersCollection.updateOne(
+    { email: req.session.user.email },
+    { $set: { upi: req.body.upi } }
+  );
+
+  res.json({ success:true });
+});
+
+
+
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
