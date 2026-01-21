@@ -187,40 +187,51 @@ app.post("/login", async (req, res) => {
 
 
 app.post("/create-order", async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
   const orderId = "ORDER_" + Date.now();
-const amount = Number(req.body.amount);
+  const amount = Number(req.body.amount);
 
   try {
-    const response = await fetch("https://sandbox.cashfree.com/pg/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-version": "2023-08-01",
-        "x-client-id": CF_APP_ID,
-        "x-client-secret": CF_SECRET
-      },
-body: JSON.stringify({
-  order_id: orderId,
-  order_amount: amount,
-  order_currency: "INR",
-  customer_details: {
-  customer_id: req.session.user.id,   
-  customer_phone: req.session.user.phone
-  },
-  order_meta: {
-    return_url: "https://vontobel2.onrender.com/payment-result?order_id={order_id}"
-  }
-})
-
-    });
+    const response = await fetch(
+      "https://sandbox.cashfree.com/pg/orders",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-version": "2023-08-01",
+          "x-client-id": process.env.CF_APP_ID,
+          "x-client-secret": process.env.CF_SECRET
+        },
+        body: JSON.stringify({
+          order_id: orderId,
+          order_amount: amount,
+          order_currency: "INR",
+          customer_details: {
+            customer_id: String(req.session.user.id),
+            customer_phone: req.session.user.phone,
+            customer_email: req.session.user.email
+          },
+          order_meta: {
+            return_url:
+              "https://vontobel2.onrender.com/payment-result?order_id={order_id}"
+          }
+        })
+      }
+    );
 
     const data = await response.json();
-    console.log(data)
+    console.log("Cashfree:", data);
     res.json(data);
+
   } catch (err) {
+    console.error("Create order error:", err);
     res.status(500).json({ error: "Order creation failed" });
   }
 });
+
 
 
 app.get("/payment-result", async (req, res) => {
@@ -322,6 +333,59 @@ app.get("/verify-payment/:orderId", async (req, res) => {
   }
 });
 
+
+
+
+app.post("/withdraw", async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ success:false, message:"Unauthorized" });
+  }
+
+  const amount = Number(req.body.amount);
+
+  if (!amount || amount <= 0) {
+    return res.json({ success:false, message:"Invalid amount" });
+  }
+
+  try {
+    const user = await usersCollection.findOne({
+      email: req.session.user.email
+    });
+
+    if (!user) {
+      return res.json({ success:false, message:"User not found" });
+    }
+
+    if (user.balance < amount) {
+      return res.json({ success:false, message:"Insufficient balance" });
+    }
+
+    const newBalance = user.balance - amount;
+
+    await usersCollection.updateOne(
+      { email: user.email },
+      {
+        $set: { balance: newBalance },
+        $push: {
+          trans: {
+            transId: "WD_" + Date.now(),
+            amount: -amount,
+            date: new Date(),
+            type: "withdraw"
+          }
+        }
+      }
+    );
+
+    req.session.user.balance = newBalance;
+
+    res.json({ success:true, balance:newBalance });
+
+  } catch (err) {
+    console.error("Withdraw error:", err);
+    res.status(500).json({ success:false, message:"Server error" });
+  }
+});
 
 
 
