@@ -83,7 +83,7 @@ app.get("/user_info", async (req, res) => {
     // 🔍 Always fetch latest user from DB
     const user = await usersCollection.findOne(
       { email: req.session.user.email },
-      { projection: { balance: 1 , phone: 1, name: 1} }
+      { projection: { balance: 1 , phone: 1, name: 1, upi:1} }
     );
 
     if (!user) {
@@ -95,6 +95,7 @@ app.get("/user_info", async (req, res) => {
       balance: user.balance,
       phone:user.phone,
       name:user.name,
+      upi:user.upi || null,
       email:req.session.user.email
     });
 
@@ -409,6 +410,58 @@ app.post("/activate-upi", async (req, res) => {
   );
 
   res.json({ upi });
+});
+
+
+
+
+
+app.post("/send-money", async (req, res) => {
+  try {
+    if (!req.session.user?.email) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { upi, amount } = req.body;
+    if (!upi || amount <= 0) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
+
+    const sender = await usersCollection.findOne({
+      email: req.session.user.email
+    });
+
+    if (!sender || sender.balance < amount) {
+      return res.status(400).json({ message: "Insufficient balance" });
+    }
+
+    const receiver = await usersCollection.findOne({ upi });
+
+    if (!receiver) {
+      return res.status(404).json({ message: "UPI not found" });
+    }
+
+    if (receiver.email === sender.email) {
+      return res.status(400).json({ message: "Cannot send to self" });
+    }
+
+    // 💰 ATOMIC TRANSACTION
+    await usersCollection.updateOne(
+      { email: sender.email },
+      { $inc: { balance: -amount } }
+    );
+
+    await usersCollection.updateOne(
+      { upi },
+      { $inc: { balance: amount } }
+    );
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Send money error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 
