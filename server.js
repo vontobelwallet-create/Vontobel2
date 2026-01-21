@@ -243,7 +243,7 @@ app.get("/payment-result", async (req, res) => {
       <body style="font-family:Arial;text-align:center;padding:40px">
         <h2>Processing Payment...</h2>
         <script>
-          window.location.href = "/dashboard.html?order_id=${orderId}";
+          window.location.href = "https://vontobel-ledge.vercel.app/dashboard.html?order_id=${orderId}";
         </script>
       </body>
     </html>
