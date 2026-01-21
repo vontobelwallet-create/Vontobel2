@@ -466,20 +466,10 @@ app.post("/send-money", async (req, res) => {
 
 
 
-app.post("/logout", (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      console.error("Logout error:", err);
-      return res.status(500).json({ message: "Logout failed" });
-    }
-
-    // 🔐 Clear session cookie (VERY IMPORTANT)
-    res.clearCookie("connect.sid"); // default express-session cookie name
-
-    // ✅ Redirect to login page
-    res.redirect(
-      "https://vontobelwallet-create.github.io/Vontobel_Ledge/login.html"
-    );
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie("connect.sid");
+    res.status(200).end();
   });
 });
 
