@@ -389,15 +389,23 @@ app.post("/withdraw", async (req, res) => {
 
 
 
-app.post("/activate-upi", async (req,res)=>{
-  if(!req.session.user) return res.sendStatus(401);
+app.post("/activate-upi", async (req, res) => {
+  if (!req.session.user?.email) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const { upi } = req.body;
+
+  if (!upi) {
+    return res.status(400).json({ error: "UPI required" });
+  }
 
   await usersCollection.updateOne(
     { email: req.session.user.email },
-    { $set: { upi: req.body.upi } }
+    { $set: { upi } }
   );
 
-  res.json({ success:true });
+  res.status(200).json({ success: true, upi });
 });
 
 
