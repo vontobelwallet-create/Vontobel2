@@ -191,7 +191,7 @@ app.post("/create-order", async (req, res) => {
 const amount = Number(req.body.amount);
 
   try {
-    const response = await fetch("https://api.cashfree.com/pg/orders", {
+    const response = await fetch("https://sandbox.cashfree.com/pg/orders", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -250,7 +250,7 @@ app.get("/verify-payment/:orderId", async (req, res) => {
   try {
     /* 1️⃣ Verify payment with Cashfree */
     const response = await fetch(
-      `https://api.cashfree.com/pg/orders/${orderId}`,
+      `https://sandbox.cashfree.com/pg/orders/${orderId}`,
       {
         method: "GET",
         headers: {
